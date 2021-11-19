@@ -1,0 +1,9 @@
+id: researchWorkflow
+
+activities:
+  - send-message:
+      id: research
+      on: 
+        message-received: 
+          content: /research
+      content: "Research"
