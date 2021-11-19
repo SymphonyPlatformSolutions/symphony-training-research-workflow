@@ -1,0 +1,23 @@
+id: researchWorkflow
+
+variables:
+  approvalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
+
+activities:
+  - send-message:
+      id: research
+      on:
+        message-received:
+          content: /research
+      to:
+        stream-id: ${variables.approvalRoomId}
+      content:
+        <form id="researchForm">
+        <text-field name="price" label="Ticker Price">Price Goes Here</text-field>
+        <textarea name="content"></textarea>
+        <button type="action" name="submit">Approve</button>
+        <button type="action" name="submit">Reject</button>
+        </form>
+  - pin-message:
+      id: pinResearchForm
+      message-id: ${research.outputs.msgId}
