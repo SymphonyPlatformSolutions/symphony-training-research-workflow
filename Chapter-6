@@ -1,0 +1,27 @@
+id: researchWorkflow
+
+variables:
+  approvalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
+
+activities:
+  - execute-request:
+      id: getprice
+      on:
+        message-received:
+          content: /research
+      method: GET
+      url: https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
+  - send-message:
+      id: research
+      on:
+        activity-completed:
+          activity-id: getprice
+      to:
+        stream-id: ${variables.approvalRoomId}
+      content:
+        <form id="researchForm">
+        <text-field name="price" label="Ticker Price">BTC price is $ ${getprice.outputs.body.bitcoin.usd}</text-field>
+        <textarea name="content"></textarea>
+        <button type="action" name="submit">Approve</button>
+        <button type="action" name="submit">Reject</button>
+        </form>
