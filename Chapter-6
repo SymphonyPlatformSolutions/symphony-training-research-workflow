@@ -4,24 +4,77 @@ variables:
   approvalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
 
 activities:
+  - send-message:
+      id: researchAuthorForm
+      on:
+        one-of:
+          - message-received:
+              content: /research
+          - form-replied:
+              form-id: researchApprovalForm
+              if: ${researchApprovalForm.action == 'reject'}
+      content:
+        <form id="researchAuthorForm">
+        <h2>Research Authoring Form</h2>
+        <text-field name="researchTicker" placeholder="Please enter the ticker here"></text-field>
+        <textarea name="researchContent" placeholder="Please enter your Research here and then Submit form."></textarea>
+        <button name="textarea">Submit</button>
+        </form>
+
   - execute-request:
       id: getprice
       on:
-        message-received:
-          content: /research
+        form-replied:
+          form-id: researchAuthorForm
       method: GET
-      url: https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
+      url: https://min-api.cryptocompare.com/data/price?fsym=${researchAuthorForm.researchTicker}&tsyms=usd
+
+  - execute-script:
+      id: prepareApprovalForm
+      script: |
+        variables.BuyPrice = getprice.outputs.body.USD * 0.80
+        variables.SellPrice = getprice.outputs.body.USD * 1.20
+        variables.formattedContent = 'The author is ' + event.initiator.user.displayName + '. The ' + researchAuthorForm.researchTicker + ' price is currently $' + getprice.outputs.body.USD + '. The Research Content is ' + researchAuthorForm.researchContent
+        variables.formattedPrice = 'The suggested ' + researchAuthorForm.researchTicker + ' Buy Price for this stock is $' + variables.BuyPrice + '. The suggested ' + researchAuthorForm.researchTicker + ' Sell Price for this stock is $'  + variables.SellPrice + '.'
+
   - send-message:
-      id: research
+      id: researchApprovalForm
       on:
         activity-completed:
-          activity-id: getprice
+          activity-id: prepareApprovalForm
       to:
         stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchForm">
-        <text-field name="price" label="Ticker Price">BTC price is $ ${getprice.outputs.body.bitcoin.usd}</text-field>
-        <textarea name="content"></textarea>
-        <button type="action" name="submit">Approve</button>
-        <button type="action" name="submit">Reject</button>
+        <form id="researchApprovalForm">
+        <h2>Research Approval Form</h2>
+        <text-field name="researchApprovalTicker" label="Ticker">The ticker is ${researchAuthorForm.researchTicker}</text-field>
+        <text-field name="researchTickerPrice" label="Ticker Price">The ${researchAuthorForm.researchTicker} price is currently $${getprice.outputs.body.USD}</text-field>
+        <textarea name="researchApprovalContent" label="Research Content">${researchAuthorForm.researchContent}</textarea>
+        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">${variables.formattedContent} ${variables.formattedPrice}</textarea>
+        <button name="approve" type="action">Approve</button>
+        <button name="reject" type="action">Reject</button>
         </form>
+
+  - send-message:
+      id: approvedResearchForm
+      on:
+        form-replied:
+          form-id: researchApprovalForm
+      if: ${researchApprovalForm.action == 'approve'}
+      to:
+        stream-id: ${variables.approvalRoomId}
+      content:
+        <h2>Approved Research Content</h2>
+        <hr/>
+        ${variables.formattedContent} ${variables.formattedPrice}
+
+  - send-message:
+      id: rejectedResearchForm
+      on:
+        form-replied:
+            form-id: researchApprovalForm
+            if: ${researchApprovalForm.action == 'reject'}
+      content:
+        <h2>Rejected Research Content</h2>
+        <hr/>
+        ${variables.formattedContent} ${variables.formattedPrice}
