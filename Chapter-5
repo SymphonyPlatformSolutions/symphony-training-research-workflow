@@ -9,15 +9,14 @@ activities:
       on:
         message-received:
           content: /research
-      to:
-        stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchForm">
-        <text-field name="price" label="Ticker Price">Price Goes Here</text-field>
-        <textarea name="content"></textarea>
-        <button type="action" name="submit">Approve</button>
-        <button type="action" name="submit">Reject</button>
+        <form id="researchAuthorForm">
+        <h2>Research Authoring Form</h2>
+        <text-field name="researchTicker" placeholder="Please enter the ticker here"></text-field>
+        <textarea name="researchContent" placeholder="Please enter your Research here and then Submit form."></textarea>
+        <button name="textarea">Submit</button>
         </form>
+  
   - pin-message:
       id: pinResearchForm
       message-id: ${research.outputs.msgId}
