@@ -17,8 +17,6 @@ activities:
           - form-replied:
               form-id: researchApprovalForm
               if: ${researchApprovalForm.action == 'reject'}
-      to:
-        user-ids: ${event.initiator.user.userId}
       content:
         <form id="researchAuthorForm">
         <h2>Research Authoring Form</h2>
@@ -67,7 +65,7 @@ activities:
           form-id: researchApprovalForm
       if: ${researchApprovalForm.action == 'approve'}
       to:
-        stream-id: ${variables.researchDistributionRoomId}
+        stream-ids: ${variables.researchDistributionRoomId}
       content:
         <h2>Approved Research Content</h2>
         <hr/>
@@ -79,6 +77,8 @@ activities:
         form-replied:
             form-id: researchApprovalForm
             if: ${researchApprovalForm.action == 'reject'}
+      to:
+        user-ids: [event.initiator.user.userId]
       content:
         <h2>Rejected Research Content</h2>
         <hr/>
