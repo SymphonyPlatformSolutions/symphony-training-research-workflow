@@ -37,6 +37,7 @@ activities:
   - execute-script:
       id: prepareApprovalForm
       script: |
+        variables.user = event.initiator.user.userId
         variables.BuyPrice = getprice.outputs.body.USD * 0.80
         variables.SellPrice = getprice.outputs.body.USD * 1.20
         variables.formattedContent = 'The author is ' + event.initiator.user.displayName + '. The ' + researchAuthorForm.researchTicker + ' price is currently $' + getprice.outputs.body.USD + '. The Research Content is ' + researchAuthorForm.researchContent
@@ -76,9 +77,10 @@ activities:
       on:
         form-replied:
             form-id: researchApprovalForm
-            if: ${researchApprovalForm.action == 'reject'}
+      if: ${researchApprovalForm.action == 'reject'}
       to:
-        user-ids: [event.initiator.user.userId]
+        user-ids:
+          - ${variables.user}
       content:
         <h2>Rejected Research Content</h2>
         <hr/>
