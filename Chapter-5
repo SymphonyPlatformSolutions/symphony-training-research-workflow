@@ -1,7 +1,7 @@
 id: researchWorkflow
 
 variables:
-  researchApprovalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
+  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
 
 activities:
   - send-message:
