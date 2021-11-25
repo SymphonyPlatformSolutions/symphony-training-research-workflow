@@ -1,0 +1,45 @@
+id: researchWebhookWorkflow
+
+variables:
+  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+
+activities:
+  - send-message:
+      id: researchWebhookAuthorForm
+      on:
+        one-of:
+          - message-received:
+              content: /research
+          - request-received:
+              token: my-secret-token
+      to:
+        stream-id: d0KJuWpuCuwJiTxnKjcvV3///oMalfRAdA==
+      content:
+        <form id="researchWebhookAuthorForm">
+        <h2>Research Webhook Authoring Form</h2>
+        <text-field name="researchWebhookTicker">${event.args.researchWebhookTicker}</text-field>
+        <textarea name="researchWebhookContent">${event.args.researchWebhookContent}</textarea>
+        <button name="textarea">Submit</button>
+        </form>
+
+  - execute-script:
+      id: prepareWebhookApprovalForm
+      script: |
+        variables.WebhookTicker = event.args.researchWebhookTicker
+        variables.WebhookContent = event.args.researchWebhookContent
+
+  - send-message:
+      id: researchApprovalForm
+      on:
+        form-replied:
+          form-id: researchWebhookAuthorForm
+      to:
+        stream-id: ${variables.researchApprovalRoomId}
+      content:
+        <form id="researchApprovalForm">
+        <h2>Research Webhook Approval Form</h2>
+        <hr/>
+        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">Stock Ticker - ${variables.WebhookTicker}.  Research Content - ${variables.WebhookContent}</textarea>
+        <button name="approve" type="action">Approve</button>
+        <button name="reject" type="action">Reject</button>
+        </form>
