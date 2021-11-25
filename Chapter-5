@@ -1,11 +1,11 @@
 id: researchWorkflow
 
 variables:
-  approvalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
+  researchApprovalRoomId: EV3Xqb4V402DnHtd+azOqn///oLSWpuQdA==
 
 activities:
   - send-message:
-      id: research
+      id: researchAuthorForm
       on:
         message-received:
           content: /research
@@ -19,4 +19,4 @@ activities:
   
   - pin-message:
       id: pinResearchForm
-      message-id: ${research.outputs.msgId}
+      message-id: ${researchAuthorForm.outputs.msgId}
