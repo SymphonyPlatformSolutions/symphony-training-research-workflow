@@ -20,3 +20,16 @@ activities:
   - pin-message:
       id: pinResearchForm
       message-id: ${researchAuthorForm.outputs.msgId}
+
+  - send-message:
+      id: researchApprovalForm
+      to:
+        stream-id: ${variables.researchApprovalRoomId}
+      content:
+        <form id="researchApprovalForm">
+        <h2>Research Approval Form</h2>
+        <hr/>
+        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">You will see the Research Content for Approval here.</textarea>
+        <button name="approve" type="action">Approve</button>
+        <button name="reject" type="action">Reject</button>
+        </form>
