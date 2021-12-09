@@ -7,9 +7,8 @@ activities:
   - send-message:
       id: researchAuthorForm
       on:
-        one-of:
-          - message-received:
-              content: /research
+          message-received:
+            content: /research
       content:
         <form id="researchAuthorForm">
         <h2>Research Authoring Form</h2>
