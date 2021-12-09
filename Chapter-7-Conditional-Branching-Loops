@@ -13,8 +13,8 @@ activities:
   - send-message:
       id: researchAuthorForm
       on:
-          message-received:
-            content: /research
+        message-received:
+          content: /research
       content:
         <form id="researchAuthorForm">
         <h2>Research Authoring Form</h2>
@@ -49,14 +49,14 @@ activities:
   - execute-script:
       id: formatTicker
       script: |
-        variables.formattedTicker += 'Price of ' + variables.Tickers[variables.tickerIndex++] + ' is currently $' + getprice.outputs.body.USD
+        variables.formattedTicker += 'The current price of ' + variables.Tickers[variables.tickerIndex++] + ' is currently $' + getprice.outputs.body.USD + '. '
 
   - execute-script:
       id: prepareApprovalForm
       script: |
         variables.BuyPrice = getprice.outputs.body.USD * 0.80
         variables.SellPrice = getprice.outputs.body.USD * 1.20
-        variables.formattedContent = 'The author is ' + event.initiator.user.displayName + ' The Research Content is ' + researchAuthorForm.researchContent
+        variables.formattedContent = 'The author is ' + event.initiator.user.displayName + '. The ' + researchAuthorForm.researchTicker + ' Research Content is: ' + researchAuthorForm.researchContent + '.'
         variables.formattedPrice = 'The Buy Price for this stock is $' + variables.BuyPrice + '. The Sell Price for this stock is $'  + variables.SellPrice + '.'
         variables.AuthorId = event.source.stream.streamId
 
