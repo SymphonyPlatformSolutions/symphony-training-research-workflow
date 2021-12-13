@@ -1,35 +1,36 @@
-id: researchWorkflow
+id: research-workflow
 
 variables:
-  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  approvalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
 
 activities:
   - send-message:
-      id: researchAuthorForm
+      id: authoringForm
       on:
         message-received:
           content: /research
       content:
-        <form id="researchAuthorForm">
+        <form id="authoringForm">
         <h2>Research Authoring Form</h2>
-        <text-field name="researchTicker" placeholder="Please enter the ticker here"></text-field>
-        <textarea name="researchContent" placeholder="Please enter your Research here and then Submit form."></textarea>
-        <button name="textarea">Submit</button>
+        <text-field name="ticker" placeholder="Please enter the Stock Ticker here"></text-field>
+        <textarea name="content" placeholder="Please enter your Research Content here and then Submit form."></textarea>
+        <button name="submit">Submit</button>
         </form>
   
   - pin-message:
-      id: pinResearchForm
-      message-id: ${researchAuthorForm.outputs.msgId}
+      id: pinAuthorForm
+      message-id: ${authoringForm.outputs.msgId}
 
   - send-message:
-      id: researchApprovalForm
+      id: approvalForm
       to:
-        stream-id: ${variables.researchApprovalRoomId}
+        stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchApprovalForm">
+        <form id="approvalForm">
         <h2>Research Approval Form</h2>
         <hr/>
-        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">You will see the Research Content for Approval here.</textarea>
+        <textarea name="approvalContent" label="Research Content">You will see the Research Content for Approval here.</textarea>
+        <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
         </form>
