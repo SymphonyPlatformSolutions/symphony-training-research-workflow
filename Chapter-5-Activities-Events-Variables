@@ -18,7 +18,7 @@ activities:
         </form>
   
   - pin-message:
-      id: pinAuthorForm
+      id: pinAuthoringForm
       message-id: ${authoringForm.outputs.msgId}
 
   - send-message:
