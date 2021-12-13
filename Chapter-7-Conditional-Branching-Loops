@@ -1,107 +1,90 @@
-id: researchWorkflow
-
+id: research-workflow
 variables:
-  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
-  researchDistributionRoomId:
+  approvalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  clientRoomIds:
     - O88WxKcYm8JU8AxDl6Fc+3///oKu0XE+dA==
     - tnScVqjBB8dmheD5FLIR7H///oKu0MqLdA==
     - DkFRsjOx8k/31mChb7p54H///oKu0ESZdA==
-  tickerIndex: 0
-  formattedTicker: ""
 
 activities:
-  - send-message:
-      id: researchAuthorForm
+  - execute-script:
+      id: setAuthor
       on:
         message-received:
           content: /research
-      content:
-        <form id="researchAuthorForm">
-        <h2>Research Authoring Form</h2>
-        <hr/>
-        <text-field name="researchTicker" placeholder="Please enter the ticker here"></text-field>
-        <textarea name="researchContent" placeholder="Please enter your Research here and then Submit form."></textarea>
-        <text-field name="researchCompetitionTicker" placeholder="Please enter the competition ticker here"></text-field>
-        <hr/>
-        <button name="textarea">Submit</button>
-        </form>
+      script: variables.authorStreamId = event.source.message.stream.streamId
 
-  - execute-script:
-      id: setTickers
-      on:
-        form-replied:
-          form-id: researchAuthorForm
-      script: |
-        variables.Tickers = [researchAuthorForm.researchCompetitionTicker,researchAuthorForm.researchTicker]
-
-  - execute-request:
-      id: getprice
+  - send-message:
+      id: authoringForm
       on:
         one-of:
-          - form-replied:
-              form-id: researchAuthorForm
           - activity-completed:
-              activity-id: formatTicker
-              if: ${variables.tickerIndex <= 1}
-      method: GET
-      url: https://min-api.cryptocompare.com/data/price?fsym=${variables.Tickers[variables.tickerIndex]}&tsyms=usd
+              activity-id: setAuthor
+          - activity-completed:
+              activity-id: setApproval
+              if: ${variables.rejected != null}
+      to:
+        stream-id: ${variables.authorStreamId}
+      content: |
+        <form id="authoringForm">
+          <h2>Research Authoring Form</h2>
+          ${variables.rejected}
+          <hr/>
+          <text-field name="ticker" label="Ticker">${variables.ticker}</text-field>
+          <textarea name="content" label="Research Content">${variables.content}</textarea>
+          <hr/>
+          <button name="submit">Submit for Approval</button>
+        </form>
 
-  - execute-script:
-      id: formatTicker
-      script: |
-        variables.formattedTicker += 'The current price of ' + variables.Tickers[variables.tickerIndex++] + ' is currently $' + getprice.outputs.body.USD + '. '
+  - execute-request:
+      id: getPrice
+      on:
+        form-replied:
+          form-id: authoringForm
+          exclusive: true
+      method: GET
+      url: https://min-api.cryptocompare.com/data/price?fsym=${authoringForm.ticker}&tsyms=usd
 
   - execute-script:
       id: prepareApprovalForm
       script: |
-        variables.BuyPrice = getprice.outputs.body.USD * 0.80
-        variables.SellPrice = getprice.outputs.body.USD * 1.20
-        variables.formattedContent = 'The author is ' + event.initiator.user.displayName + '. The ' + researchAuthorForm.researchTicker + ' Research Content is: ' + researchAuthorForm.researchContent + '.'
-        variables.formattedPrice = 'The Buy Price for this stock is $' + variables.BuyPrice + '. The Sell Price for this stock is $'  + variables.SellPrice + '.'
-        variables.AuthorId = event.source.stream.streamId
+        variables.ticker = authoringForm.ticker
+        variables.content = authoringForm.content
+        variables.targetPrice = getPrice.outputs.body.USD * 1.20
+        variables.stopLoss = getPrice.outputs.body.USD * 0.80
+        variables.formattedContent = 'Author: ' + event.initiator.user.displayName + '<br/>' \
+          + 'Ticker: ' + variables.ticker + '.<br/>' \
+          + 'Current Price: $' + getPrice.outputs.body.USD + '<br/>' \
+          + 'Target Price: $' + variables.targetPrice + '<br/>' \
+          + 'Stop Loss: $' + variables.stopLoss + '<br/><br/>' \
+          + variables.content
 
   - send-message:
-      id: researchApprovalForm
+      id: approvalForm
       to:
-        stream-id: ${variables.researchApprovalRoomId}
+        stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchApprovalForm">
-        <h2>Research Approval Form</h2>
-        <hr/>
-        ${variables.formattedContent} ${variables.formattedPrice} ${variables.formattedTicker}
+        <form id="approvalForm">
+        <h2>Research Approval Form</h2><hr/>
+        ${variables.formattedContent}
         <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
         </form>
 
-  - send-message:
-      id: approvedResearchForm
+  - execute-script:
+      id: setApproval
       on:
         form-replied:
-          form-id: researchApprovalForm
-      if: ${researchApprovalForm.action == 'approve'}
-      to:
-        stream-ids: ${variables.researchDistributionRoomId}
-      content:
-        <h2>Approved Research Content</h2>
-        <hr/>
-        ${variables.formattedContent} ${variables.formattedPrice}
+          form-id: approvalForm
+          exclusive: true
+      script: |
+        variables.rejected = approvalForm.action == "approve" ? null : "Your draft was rejected - please update content and re-submit the form."
 
   - send-message:
-      id: rejectedResearchForm
-      on:
-        one-of:
-          - form-replied:
-              form-id: researchApprovalForm
-          - activity-completed:
-              activity-id: researchApprovalForm
-      if: ${researchApprovalForm.action == 'reject'}
+      id: distributeContent
       to:
-        stream-id: ${variables.researchApprovalRoomId}
-      content:
-        <form id="researchRejectForm">
-        <h2>Research Rejection Feedback</h2>
-        <hr/>
-        <textarea name="researchRejectedContent" placeholder="Please enter your feedback for rejecting the ${researchAuthorForm.researchTicker} Research topic by ${event.initiator.user.displayName} and then Submit form."></textarea>
-        <button name="textarea">Submit</button>
-        </form>
+        stream-ids: ${variables.clientRoomIds}
+      content: |
+        <h2>Research Note</h2><hr/>
+        ${variables.formattedContent}
