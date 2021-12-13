@@ -58,7 +58,7 @@ activities:
           + 'Current Price: $' + getPrice.outputs.body.USD + '<br/>' \
           + 'Target Price: $' + variables.targetPrice + '<br/>' \
           + 'Stop Loss: $' + variables.stopLoss + '<br/><br/>' \
-          + variables.content
+          + 'Research Content: ' + variables.content
 
   - send-message:
       id: approvalForm
