@@ -14,18 +14,13 @@ activities:
   - send-message:
       id: authoringForm
       on:
-        one-of:
-          - activity-completed:
-              activity-id: setAuthor
-          - activity-completed:
-              activity-id: setApproval
-              if: ${variables.rejected != null}
+        activity-completed:
+          activity-id: setAuthor
       to:
         stream-id: ${variables.authorStreamId}
       content: |
         <form id="authoringForm">
           <h2>Research Authoring Form</h2>
-          ${variables.rejected}
           <hr/>
           <text-field name="ticker" label="Ticker"></text-field>
           <textarea name="content" label="Research Content"></textarea>
