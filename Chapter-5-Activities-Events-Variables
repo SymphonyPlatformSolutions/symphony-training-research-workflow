@@ -29,7 +29,7 @@ activities:
         <form id="approvalForm">
         <h2>Research Approval Form</h2>
         <hr/>
-        <textarea name="approvalContent" label="Research Content">${authoringForm.ticker} </br> ${authoringForm.content}</textarea>
+        <textarea name="approvalContent">${authoringForm.ticker} </br> ${authoringForm.content}</textarea>
         <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
