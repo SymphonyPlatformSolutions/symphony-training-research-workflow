@@ -9,7 +9,7 @@ activities:
       on:
         message-received:
           content: /research
-      content:
+      content: |
         <form id="authoringForm">
         <h2>Research Authoring Form</h2>
         <text-field name="ticker" placeholder="Please enter the Stock Ticker here"></text-field>
