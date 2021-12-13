@@ -1,11 +1,12 @@
-id: researchWebhookWorkflow
+id: research-webhook-workflow
 
 variables:
-  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  approvalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  botRoomId: d0KJuWpuCuwJiTxnKjcvV3///oMalfRAdA==
 
 activities:
   - send-message:
-      id: researchWebhookAuthorForm
+      id: authoringWebhookForm
       on:
         one-of:
           - message-received:
@@ -13,33 +14,36 @@ activities:
           - request-received:
               token: my-secret-token
       to:
-        stream-id: d0KJuWpuCuwJiTxnKjcvV3///oMalfRAdA==
-      content:
-        <form id="researchWebhookAuthorForm">
-        <h2>Research Webhook Authoring Form</h2>
-        <text-field name="researchWebhookTicker">${event.args.researchWebhookTicker}</text-field>
-        <textarea name="researchWebhookContent">${event.args.researchWebhookContent}</textarea>
-        <button name="textarea">Submit</button>
+        stream-id: ${variables.botRoomId}
+      content: |
+        <form id="authoringWebhookForm">
+          <h2>Research Webhook Authoring Form</h2>
+          <hr/>
+          <text-field name="webhookTicker" label="Ticker">${event.args.webhookTicker}</text-field>
+          <textarea name="webhookContent" label="Research Content">${event.args.webhookContent}</textarea>
+          <hr/>
+          <button name="submit">Submit for Approval</button>
         </form>
 
   - execute-script:
       id: prepareWebhookApprovalForm
       script: |
-        variables.WebhookTicker = event.args.researchWebhookTicker
-        variables.WebhookContent = event.args.researchWebhookContent
+        variables.webhookTicker = event.args.webhookTicker
+        variables.webhookContent = event.args.webhookContent
 
   - send-message:
-      id: researchApprovalForm
+      id: approvalWebhookForm
       on:
         form-replied:
-          form-id: researchWebhookAuthorForm
+          form-id: authoringWebhookForm
       to:
-        stream-id: ${variables.researchApprovalRoomId}
+        stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchApprovalForm">
+        <form id="approvalWebhookForm">
         <h2>Research Webhook Approval Form</h2>
         <hr/>
-        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">Stock Ticker - ${variables.WebhookTicker}.  Research Content - ${variables.WebhookContent}</textarea>
+        Ticker - ${variables.webhookTicker} <br/> Content - ${variables.webhookContent}
+        <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
         </form>
