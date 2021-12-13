@@ -1,4 +1,4 @@
-id: researchWorkflow
+id: research-workflow
 
 activities:
   - send-message:
