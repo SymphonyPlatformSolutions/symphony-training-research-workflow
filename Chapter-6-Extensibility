@@ -27,8 +27,8 @@ activities:
           <h2>Research Authoring Form</h2>
           ${variables.rejected}
           <hr/>
-          <text-field name="ticker" label="Ticker">${variables.ticker}</text-field>
-          <textarea name="content" label="Research Content">${variables.content}</textarea>
+          <text-field name="ticker" label="Ticker"></text-field>
+          <textarea name="content" label="Research Content"></textarea>
           <hr/>
           <button name="submit">Submit for Approval</button>
         </form>
@@ -50,7 +50,7 @@ activities:
         variables.targetPrice = getPrice.outputs.body.USD * 1.20
         variables.stopLoss = getPrice.outputs.body.USD * 0.80
         variables.formattedContent = 'Author: ' + event.initiator.user.displayName + '<br/>' \
-          + 'Ticker: ' + variables.ticker + '.<br/>' \
+          + 'Ticker: ' + variables.ticker + '<br/>' \
           + 'Current Price: $' + getPrice.outputs.body.USD + '<br/>' \
           + 'Target Price: $' + variables.targetPrice + '<br/>' \
           + 'Stop Loss: $' + variables.stopLoss + '<br/><br/>' \
