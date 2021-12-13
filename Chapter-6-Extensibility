@@ -1,51 +1,70 @@
-id: researchWorkflow
+id: research-workflow
 
 variables:
-  researchApprovalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  approvalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
 
 activities:
-  - send-message:
-      id: researchAuthorForm
+  - execute-script:
+      id: setAuthor
       on:
-          message-received:
-            content: /research
-      content:
-        <form id="researchAuthorForm">
-        <h2>Research Authoring Form</h2>
-        <hr/>
-        <text-field name="researchTicker" placeholder="Please enter the ticker here"></text-field>
-        <textarea name="researchContent" placeholder="Please enter your Research here and then Submit form."></textarea>
-        <button name="textarea">Submit</button>
+        message-received:
+          content: /research
+      script: variables.authorStreamId = event.source.message.stream.streamId
+
+  - send-message:
+      id: authoringForm
+      on:
+        one-of:
+          - activity-completed:
+              activity-id: setAuthor
+          - activity-completed:
+              activity-id: setApproval
+              if: ${variables.rejected != null}
+      to:
+        stream-id: ${variables.authorStreamId}
+      content: |
+        <form id="authoringForm">
+          <h2>Research Authoring Form</h2>
+          ${variables.rejected}
+          <hr/>
+          <text-field name="ticker" label="Ticker">${variables.ticker}</text-field>
+          <textarea name="content" label="Research Content">${variables.content}</textarea>
+          <hr/>
+          <button name="submit">Submit for Approval</button>
         </form>
 
   - execute-request:
-      id: getprice
+      id: getPrice
       on:
         form-replied:
-          form-id: researchAuthorForm
+          form-id: authoringForm
+          exclusive: true
       method: GET
-      url: https://min-api.cryptocompare.com/data/price?fsym=${researchAuthorForm.researchTicker}&tsyms=usd
+      url: https://min-api.cryptocompare.com/data/price?fsym=${authoringForm.ticker}&tsyms=usd
 
   - execute-script:
       id: prepareApprovalForm
       script: |
-        variables.BuyPrice = getprice.outputs.body.USD * 0.80
-        variables.SellPrice = getprice.outputs.body.USD * 1.20
-        variables.formattedContent = 'The author is ' + event.initiator.user.displayName + '. The ' + researchAuthorForm.researchTicker + ' price is currently $' + getprice.outputs.body.USD + '. The Research Content is ' + researchAuthorForm.researchContent
-        variables.formattedPrice = 'The suggested ' + researchAuthorForm.researchTicker + ' Buy Price for this stock is $' + variables.BuyPrice + '. The suggested ' + researchAuthorForm.researchTicker + ' Sell Price for this stock is $'  + variables.SellPrice + '.'
+        variables.ticker = authoringForm.ticker
+        variables.content = authoringForm.content
+        variables.targetPrice = getPrice.outputs.body.USD * 1.20
+        variables.stopLoss = getPrice.outputs.body.USD * 0.80
+        variables.formattedContent = 'Author: ' + event.initiator.user.displayName + '<br/>' \
+          + 'Ticker: ' + variables.ticker + '.<br/>' \
+          + 'Current Price: $' + getPrice.outputs.body.USD + '<br/>' \
+          + 'Target Price: $' + variables.targetPrice + '<br/>' \
+          + 'Stop Loss: $' + variables.stopLoss + '<br/><br/>' \
+          + variables.content
 
   - send-message:
-      id: researchApprovalForm
-      on:
-        activity-completed:
-          activity-id: prepareApprovalForm
+      id: approvalForm
       to:
-        stream-id: ${variables.researchApprovalRoomId}
+        stream-id: ${variables.approvalRoomId}
       content:
-        <form id="researchApprovalForm">
-        <h2>Research Approval Form</h2>
+        <form id="approvalForm">
+        <h2>Research Approval Form</h2><hr/>
+        ${variables.formattedContent}
         <hr/>
-        <textarea name="researchApprovalFormattedContent" label="Research Formatted Content">${variables.formattedContent} ${variables.formattedPrice}</textarea>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
         </form>
