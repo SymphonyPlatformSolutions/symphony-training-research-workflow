@@ -23,6 +23,9 @@ activities:
 
   - send-message:
       id: approvalForm
+      on:
+        form-replied:
+          form-id: authoringForm
       to:
         stream-id: ${variables.approvalRoomId}
       content:
