@@ -16,7 +16,7 @@ activities:
         <textarea name="content" placeholder="Please enter your Research Content here and then Submit form."></textarea>
         <button name="submit">Submit</button>
         </form>
-  
+
   - pin-message:
       id: pinAuthoringForm
       message-id: ${authoringForm.outputs.msgId}
@@ -30,9 +30,8 @@ activities:
         stream-id: ${variables.approvalRoomId}
       content: |
         <form id="approvalForm">
-        <h2>Research Approval Form</h2>
-        <hr/>
-        <textarea name="approvalContent">${authoringForm.ticker} </br> ${authoringForm.content}</textarea>
+        <h2>Research Approval Form</h2><hr/>
+        ${authoringForm.ticker} <br/> ${authoringForm.content}
         <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
