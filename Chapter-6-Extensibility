@@ -22,8 +22,8 @@ activities:
         <form id="authoringForm">
           <h2>Research Authoring Form</h2>
           <hr/>
-          <text-field name="ticker" label="Ticker"></text-field>
-          <textarea name="content" label="Research Content"></textarea>
+        <text-field name="ticker" placeholder="Please enter the Stock Ticker here"></text-field>
+        <textarea name="content" placeholder="Please enter your Research Content here and then Submit form."></textarea>
           <hr/>
           <button name="submit">Submit for Approval</button>
         </form>
