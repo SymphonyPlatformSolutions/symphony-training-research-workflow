@@ -28,7 +28,7 @@ activities:
           form-id: authoringForm
       to:
         stream-id: ${variables.approvalRoomId}
-      content:
+      content: |
         <form id="approvalForm">
         <h2>Research Approval Form</h2>
         <hr/>
