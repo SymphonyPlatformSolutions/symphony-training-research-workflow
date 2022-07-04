@@ -1,62 +1,46 @@
-id: research-workflow
+id: research-webhook-workflow
 
 variables:
   approvalRoomId: vejDKVdkDOwkhI85VgLku3///oKu0qZFdA==
+  botRoomId: d0KJuWpuCuwJiTxnKjcvV3///oMalfRAdA==
 
 activities:
-  - execute-script:
-      id: setAuthor
-      on:
-        message-received:
-          content: /research
-      script: variables.authorStreamId = event.source.message.stream.streamId
-
   - send-message:
-      id: authoringForm
+      id: authoringWebhookForm
       on:
-        activity-completed:
-          activity-id: setAuthor
+        one-of:
+          - message-received:
+              content: /research
+          - request-received:
+              token: my-secret-token
       to:
-        stream-id: ${variables.authorStreamId}
+        stream-id: ${variables.botRoomId}
       content: |
-        <form id="authoringForm">
-          <h2>Research Authoring Form</h2>
+        <form id="authoringWebhookForm">
+          <h2>Research Webhook Authoring Form</h2>
           <hr/>
-        <text-field name="ticker" placeholder="Please enter the Stock Ticker here"></text-field>
-        <textarea name="content" placeholder="Please enter your Research Content here and then Submit form."></textarea>
+          <text-field name="webhookTicker" label="Ticker">${event.args.webhookTicker}</text-field>
+          <textarea name="webhookContent" label="Research Content">${event.args.webhookContent}</textarea>
           <hr/>
           <button name="submit">Submit for Approval</button>
         </form>
-  - execute-request:
-      id: getPrice
+  - execute-script:
+      id: prepareWebhookApprovalForm
+      script: |
+        variables.webhookTicker = event.args.webhookTicker
+        variables.webhookContent = event.args.webhookContent
+  - send-message:
+      id: approvalWebhookForm
       on:
         form-replied:
-          form-id: authoringForm
-          exclusive: true
-      method: GET
-      url: https://min-api.cryptocompare.com/data/price?fsym=${authoringForm.ticker}&tsyms=usd
-
-  - execute-script:
-      id: prepareApprovalForm
-      script: |
-        variables.ticker = authoringForm.ticker
-        variables.content = authoringForm.content
-        variables.targetPrice = getPrice.outputs.body.USD * 1.20
-        variables.stopLoss = getPrice.outputs.body.USD * 0.80
-        variables.formattedContent = 'Author: ' + event.initiator.user.displayName + '<br/>' \
-          + 'Ticker: ' + variables.ticker + '<br/>' \
-          + 'Current Price: $' + getPrice.outputs.body.USD + '<br/>' \
-          + 'Target Price: $' + variables.targetPrice + '<br/>' \
-          + 'Stop Loss: $' + variables.stopLoss + '<br/><br/>' \
-          + 'Research Content: ' + variables.content
-  - send-message:
-      id: approvalForm
+          form-id: authoringWebhookForm
       to:
         stream-id: ${variables.approvalRoomId}
       content:
-        <form id="approvalForm">
-        <h2>Research Approval Form</h2><hr/>
-        ${variables.formattedContent}
+        <form id="approvalWebhookForm">
+        <h2>Research Webhook Approval Form</h2>
+        <hr/>
+        Ticker - ${variables.webhookTicker} <br/> Content - ${variables.webhookContent}
         <hr/>
         <button name="approve" type="action">Approve</button>
         <button name="reject" type="action">Reject</button>
