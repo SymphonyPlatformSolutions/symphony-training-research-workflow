@@ -26,14 +26,15 @@ activities:
         </form>
   - execute-script:
       id: prepareWebhookApprovalForm
-      script: |
-        variables.webhookTicker = event.args.webhookTicker
-        variables.webhookContent = event.args.webhookContent
-  - send-message:
-      id: approvalWebhookForm
       on:
         form-replied:
           form-id: authoringWebhookForm
+      script: |
+        variables.webhookTicker = authoringWebhookForm.webhookTicker
+        variables.webhookContent = authoringWebhookForm.webhookContent
+
+  - send-message:
+      id: approvalWebhookForm
       to:
         stream-id: ${variables.approvalRoomId}
       content:
